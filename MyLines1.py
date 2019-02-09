@@ -46,7 +46,7 @@ def marshrut(row0, col0, row1, col1):
                 if sp[row1][col1] != None:
                     break                 
         i += 1
-        print(sp[row1][col1])
+        #print(sp[row1][col1])
         if sp[row1][col1] != None:
             cont = False
         if not priznak:
@@ -134,6 +134,7 @@ class Board:
         self.left = left
         self.top = top
         self.cell_size = cell_size
+
         
     def render(self, screen):
         for i in range(self.width):
@@ -302,18 +303,35 @@ ball_new = None
 ball_last = None
 pr_add_bal = False
 while True:
-    screen.fill((0, 0, 0))
-
+    screen.fill((0, 0, 255))
+    font = pygame.font.Font(None, 70)
+    text = font.render('Счёт: ' + str(chet), 1, (255, 0, 0))
+    text_x = 170
+    text_y = 30
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    font = pygame.font.Font(None, 30)
+    text1 = font.render('>> Новая игра <<', 1, (255, 255, 255))
+    text_x1 = 175
+    text_y1 = 460
+    text_w1 = text.get_width()
+    text_h1 = text.get_height()
+    screen.blit(text1, (text_x1, text_y1))
     if pr_add_bal:
         sp_lin = []
         for _ in range(3):
             if nball >= 81:
-                print('end', chet)
+                print('!!!!! end', chet)
                 break
             newb = Ball(16)
             all_sprites.add(newb)
             nball += 1
             sp_lin = newb.ball_lines()
+            if len(sp_lin) >= 5:
+                newb.kill(sp_lin)
+                chet = chet + 50 + (len(sp_lin) - 5) * 20
+                nball -= len(sp_lin)
             
             
         pr_add_bal = False
@@ -322,6 +340,15 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.pos[0] >= 175 and event.pos[0] <= 345:
+                if event.pos[1] >= 460 and event.pos[1] <= 480:
+                    spBoard = []
+                    board = Board(9, 9)
+                    chet = 0
+                    nball = 0
+                    all_sprites = pygame.sprite.Group()
+                    pr_add_bal = True
+                    continue
             coord_cell = board.get_click(event.pos)
             a = coord_cell[1]
             if coord_cell[0] != None:
@@ -334,24 +361,24 @@ while True:
                         if ball_new == ball_last:
                             ball_new = None
                             ball_last.vybor = True
-                    print(i.row, i.col)
+                    #print(i.row, i.col)
                 if ball_new != None and spBoard[coord_cell[1]][coord_cell[0]] == None:
-                    print(spBoard)
+                    #print(spBoard)
 
                     spm = marshrut(ball_new.row, ball_new.col,coord_cell[1], coord_cell[0])
+                    if len(spm) > 0:
+                        ball_new.moves(coord_cell)
+                        ball_new.vybor = False
+                        sp_lin = ball_new.ball_lines()
+                        if len(sp_lin) >= 5:
+                            ball_new.kill(sp_lin)
+                            chet = chet + 50 + (len(sp_lin) - 5) * 20
+                            nball -= len(sp_lin)
                     
-                    ball_new.moves(coord_cell)
-                    ball_new.vybor = False
-                    sp_lin = ball_new.ball_lines()
-                    if len(sp_lin) >= 5:
-                        ball_new.kill(sp_lin)
-                        chet = chet + 50 + (len(sp_lin) - 5) * 20
-                        nball -= len(sp_lin)
+                        ball_last = None
+                        ball_new = None
                     
-                    ball_last = None
-                    ball_new = None
-                    
-                    pr_add_bal = True
+                        pr_add_bal = True
                     #if not board.lines():
                         #pr_add_bal = True
                     #ball_vybor.vybor =False
